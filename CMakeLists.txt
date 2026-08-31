@@ -14,7 +14,13 @@ include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(lib)
 
 file(GLOB_RECURSE GL_PROJECT_SRC
-     "apps/*.cpp"
+     "apps/main.cpp"
+     "apps/Image.cpp"
+     "apps/WebService.cpp"
+     "apps/Quad.cpp"
+     "apps/ShaderProgram.cpp"
+     "apps/Texture.cpp"
+     "apps/Glyph.cpp"
      "src/*.cpp"
      "lib/*.cpp"
      "lib/glad/*.c"
@@ -22,5 +28,5 @@ file(GLOB_RECURSE GL_PROJECT_SRC
 
 # Main executable
 add_executable(GLProject ${GL_PROJECT_SRC})
-target_link_libraries(GLProject OpenGL::GL ${GLWF_LIBRARIES})
+target_link_libraries(GLProject OpenGL::GL ${GLWF_LIBRARIES} curl)
 
