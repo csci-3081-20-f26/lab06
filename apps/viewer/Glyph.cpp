@@ -12,7 +12,7 @@ Glyph::Glyph(float x, float y, float w, float h, const Image& image) : x(x), y(y
     texPtr.texture = texture;
     texPtr.weak = false;
     textures.push_back(texPtr);
-    shaderProgram = new ShaderProgram("src/graphics/shaders/quad.vsh", "src/graphics/shaders/quad.fsh");
+    shaderProgram = new ShaderProgram("apps/viewer/shaders/quad.vsh", "apps/viewer/shaders/quad.fsh");
 }
 
 Glyph::Glyph(float x, float y, float w, float h, const Image& image, ShaderProgram* shaderProgram) : x(x), y(y), w(w), h(h), shaderProgram(shaderProgram) {

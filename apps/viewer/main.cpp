@@ -10,13 +10,16 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include "sys/stat.h"
 
 #include "WebService.h"
 #include "Image.h"
+#include "Glyph.h"
 
 #include <cmath>
 
 using namespace gis;
+using namespace csci3081;
 
 double longitudeToMercator(double longitude) {
   return (180.0+longitude)/360.0;
@@ -53,11 +56,23 @@ float tileToLatitude(int tile, int zoom) {
   return mercatorToLatitude(mercator);
 }
 
-Image* getTile(Image& img, int tileX, int tileY, int zoom) {
+inline bool checkFileExists(const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
+
+Image* getTile(int tileX, int tileY, int zoom) {
+    std::string cacheFile = "apps/viewer/data/" + std::string("") + std::to_string(zoom) + "-" + std::to_string(tileY) + "-" + std::to_string(tileX) + ".png";
+    if (checkFileExists(cacheFile)) {
+        return new Image(cacheFile);
+    }
+
     WebService ws("https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/");
     std::cout << std::string("") + std::to_string(zoom) + "/" + std::to_string(tileY) + "/" + std::to_string(tileX) << std::endl;
     std::string output = ws.get(std::string("") + std::to_string(zoom) + "/" + std::to_string(tileY) + "/" + std::to_string(tileX));
-    return new Image((unsigned char*)(output.c_str()), output.size());
+    Image* img = new Image((unsigned char*)(output.c_str()), output.size());
+    img->saveAs(cacheFile);
+    return img;
 }
 
 Image* createSatelliteImage(float minLon, float minLat, float maxLon, float maxLat) {
@@ -205,29 +220,49 @@ int main(int argc, char *argv[]) {
         }
     );
 
-    int a = 0;
+    // Application GL Context scope
+    {
+        int a = 0;
 
-    while (!glfwWindowShouldClose(window)) {
-        glfwWaitEvents();
-        //glfwPollEvents();
-        
-        glClearColor(1.0,0,0,1.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        std::vector<Glyph*> tiles;
 
-        a++;
-        std::cout << a << std::endl;
-
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window, true);
+        for (int x = 0; x < 4; x++) {
+            for (int y = 0; y < 4; y++) {
+                Image* img = getTile(2+x,2+y,3);
+                tiles.push_back(new Glyph(1.0*x/4.0 ,1.0*y/4.0, 1.0/4.0, 1.0/4.0, *img));
+                delete img;
+            }
         }
 
-        glfwSwapBuffers(window);
-    }
+        
 
-    mainloopActive = false;
+        while (!glfwWindowShouldClose(window)) {
+            glfwWaitEvents();
+            //glfwPollEvents();
+            
+            glClearColor(1.0,0,0,1.0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    //glfwSetWindowUserPointer(window, this);
-    refresh_thread.join();
+            a++;
+            std::cout << a << std::endl;
+
+            if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+                glfwSetWindowShouldClose(window, true);
+            }
+
+
+            for (int i = 0; i < tiles.size(); i++) {
+                tiles[i]->draw();
+            }
+
+            glfwSwapBuffers(window);
+        }
+
+        mainloopActive = false;
+
+        //glfwSetWindowUserPointer(window, this);
+        refresh_thread.join();
+    }  
 
     glfwTerminate();
 
