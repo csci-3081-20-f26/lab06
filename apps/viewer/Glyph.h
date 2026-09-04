@@ -35,6 +35,9 @@ public:
   void setModelMatrix(const glm::mat4& model) {
     this->model = model;
   }
+  const glm::mat4& getModelMatrix() const {
+    return this->model;
+  }
 
 protected:
   const ShaderProgram &getShaderProgram() const { return *shaderProgram; }

@@ -156,8 +156,31 @@ class Tile {
     
 };
 
+class Node {
+public:
+    virtual void draw(const glm::mat4& currentTransform) {
+        glm::mat4 t = currentTransform * transform;
+        for (int i = 0; i < children.size(); i++) {
+            children[i]->draw(t);
+        }
+    }
 
-std::vector<Glyph*> tiles;
+    glm::mat4 transform;
+    std::vector<Node*> children;
+};
+
+class GlyphNode : public Node {
+public:
+    void draw(const glm::mat4& currentTransform) {
+        glm::mat4 t = currentTransform * transform;
+        glyph->setModelMatrix(t);
+        glyph->draw();
+    }
+
+    Glyph* glyph;
+};
+
+Node mapNode;
 int res = 2;
 int zoom = 1;
 float xoff = 0;
@@ -168,35 +191,43 @@ int width = 1;
 int height = 1;
 float dx = 0.0;
 float dy = 0.0;
+float startx = 0.0;
+float starty = 0.0;
 
 glm::mat4 zTransform = glm::mat4(1.0f);
 
 void resetTiles() {
-    for (int i = 0; i < tiles.size(); i++) {
-        delete tiles[i];
-    }
 
-    tiles.clear();
+    mapNode.children.clear();
 
+    /*Node* map = new Node();
+    map->transform = glm::mat4(1.0f);*/
+    //tiles.push_back(map);
 
     for (int x = 0; x < res; x++) {
         for (int y = 0; y < res; y++) {
             //Image* img = getTile(xoff + x, yoff+ y,zoom);
             Image* img = getTile(x, y,1.0);
-            Glyph* tile = new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img, new ShaderProgram("apps/viewer/shaders/quad_mat.vsh", "apps/viewer/shaders/quad.fsh"));
+            //Glyph* tile = new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img, new ShaderProgram("apps/viewer/shaders/quad_mat.vsh", "apps/viewer/shaders/quad.fsh"));
+
+            GlyphNode* tile = new GlyphNode();
+            tile->glyph = new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img, new ShaderProgram("apps/viewer/shaders/quad_mat.vsh", "apps/viewer/shaders/quad.fsh"));
 
             glm::mat4 transform =  glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
             
-            transform = glm::translate(transform, glm::vec3(xoff, yoff, 0.0f));
+            /*transform = glm::translate(transform, glm::vec3(xoff, yoff, 0.0f));
             transform = glm::scale(transform, glm::vec3(std::pow(2.0, zoom-1), std::pow(2.0, zoom-1), 0.0f));
-            transform = glm::translate(transform, glm::vec3(-xloc, -yloc, 0.0f));
+            transform = glm::translate(transform, glm::vec3(-xloc, -yloc, 0.0f));*/
 
             //transform = glm::scale(transform, glm::vec3(1.0*height/width, 1.0f, 0.0f));
             transform = glm::translate(transform, glm::vec3(2.0*x/res-1.0/res, 1.0/res-2.0*y/res, 0.0f));
             transform = glm::scale(transform, glm::vec3(0.5f, 0.5f, 0.0f));
-            tile->setModelMatrix(transform);
+            //tile->setModelMatrix(transform);
+            tile->transform = transform;
 
-            tiles.push_back(tile);
+            mapNode.children.push_back(tile);
+
+            //tiles.push_back(tile);
             std::cout << 2.0*x/res-1.0/res << " " << 1.0/res-2.0*y/res  << std::endl;
             //tiles.push_back(new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img));
             delete img;
@@ -220,6 +251,14 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     xloc += (xoff - pxoff)/std::pow(2.0,zoom-1);
     yloc += (yoff - pyoff)/std::pow(2.0,zoom-1);
 
+    zoom += yoffset;
+
+    glm::mat4 transform =  glm::mat4(1.0f); 
+    transform = glm::translate(transform, glm::vec3(xoff, yoff, 0.0f));
+    transform = glm::scale(transform, glm::vec3(std::pow(2.0, zoom-1), std::pow(2.0, zoom-1), 0.0f));
+    transform = glm::translate(transform, glm::vec3(-xloc, -yloc, 0.0f));
+    mapNode.transform = transform;
+
     // std::cout << xoffset << " " << yoffset << " " << x << " " << y << std::endl;
     // if (yoffset > 0) {
     //     xoff += x*res;
@@ -228,6 +267,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     //     yoff *= 2;
     //     /*xoff *= 2;
     //     xoff += std::pow(res, zoom)*x;
+    
     //     yoff *= 2;
     //     yoff += std::pow(res, zoom)*y;*/
     // }
@@ -240,13 +280,79 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     //     yoff /= 2;*/
     // }
     // //yoff += std::pow(res, zoom);
-    zoom += yoffset;
 
 
-    resetTiles();
+    //resetTiles();
+}
+
+bool moving = false;
+
+static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+    float x = xpos/width;
+    float y = ypos/height;
+
+    float curx = x*2.0 - 1.0;
+    float cury = 1.0 - y*2.0;
+
+    
+    if (moving) {
+        glm::mat4 transform =  glm::mat4(1.0f); 
+        transform = glm::translate(transform, glm::vec3(xoff+(curx-startx), yoff+(cury-starty), 0.0f));
+        transform = glm::scale(transform, glm::vec3(std::pow(2.0, zoom-1), std::pow(2.0, zoom-1), 0.0f));
+        transform = glm::translate(transform, glm::vec3(-xloc, -yloc, 0.0f));
+        mapNode.transform = transform;
+    }
+
+
+    //std::cout << x << std::endl;
+
+    /*if (moving) {
+        float pxoff = xoff;
+        float pyoff = yoff;
+
+        xoff = x*2.0 - 1.0;
+        yoff = 1.0 - y*2.0;
+
+        xloc += (xoff - pxoff)/std::pow(2.0,zoom-1);
+        yloc += (yoff - pyoff)/std::pow(2.0,zoom-1);
+
+        glm::mat4 transform =  glm::mat4(1.0f); 
+        transform = glm::translate(transform, glm::vec3(xoff, yoff, 0.0f));
+        transform = glm::scale(transform, glm::vec3(std::pow(2.0, zoom-1), std::pow(2.0, zoom-1), 0.0f));
+        transform = glm::translate(transform, glm::vec3(-xloc, -yloc, 0.0f));
+        mapNode.transform = transform;
+    }*/
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    float x = xpos/width;
+    float y = ypos/height;
+
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        moving = true;
+
+        startx = x*2.0 - 1.0;
+        starty = 1.0 - y*2.0;
+    }
+    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) { 
+        moving = false;
+
+        float endx = x*2.0 - 1.0;
+        float endy = 1.0 - y*2.0;
+
+        xloc += (endx-startx)/std::pow(2.0,zoom-1);
+        yloc += (endy-starty)/std::pow(2.0,zoom-1);
+
+        //xoff = xoff+(endx-startx);
+        //yoff = yoff+(endy-starty);
+    }
 }
 
 int main(int argc, char *argv[]) {
+
+    mapNode.transform = glm::mat4(1.0f);
 
     /*if (argc < 6) {
         std::cout << "Usage: ./build/bin/terrain <output file prefix> <minLon> <minLat> <maxLon> <maxLat>" << std::endl;
@@ -298,9 +404,10 @@ int main(int argc, char *argv[]) {
     }
     glfwMakeContextCurrent(window);
     glfwSetScrollCallback(window, scroll_callback);
+    glfwSetCursorPosCallback(window, cursor_position_callback);
     //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     //glfwSetCursorPosCallback(window, cursor_position_callback);
-    //glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
     }
@@ -334,7 +441,7 @@ int main(int argc, char *argv[]) {
             glfwWaitEvents();
             //glfwPollEvents();
             
-            glClearColor(1.0,0,0,1.0);
+            glClearColor(0.0,0,0,1.0);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
             a++;
@@ -344,11 +451,21 @@ int main(int argc, char *argv[]) {
                 glfwSetWindowShouldClose(window, true);
             }
 
+            mapNode.draw(glm::mat4(1.0f));
 
-            for (int i = 0; i < tiles.size(); i++) {
+            /*for (int i = 0; i < tiles.size(); i++) {
                 // get matrix's uniform location and set matrix
-                tiles[i]->draw();
-            }
+                /*glm::mat4 old = tiles[i]->getModelMatrix();
+                
+                glm::mat4 transform = glm::mat4(1.0f);
+                transform = glm::translate(transform, glm::vec3(xoff, yoff, 0.0f));
+                transform = glm::scale(transform, glm::vec3(std::pow(2.0, zoom-1), std::pow(2.0, zoom-1), 0.0f));
+                transform = glm::translate(old, glm::vec3(-xloc, -yloc, 0.0f));
+
+                tiles[i]->setModelMatrix(transform);*/
+                //tiles[i]->draw(glm::mat4(1.0f));
+                //tiles[i]->setModelMatrix(old);
+            //}
 
             glfwSwapBuffers(window);
         }
