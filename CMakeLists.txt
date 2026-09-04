@@ -11,7 +11,8 @@ pkg_search_module(GLWF REQUIRED glfw3)
 # find_package(glfw3 REQUIRED)
 
 include_directories(${OPENGL_INCLUDE_DIR})
-include_directories(lib)
+include_directories(lib lib/glm)
+add_definitions(-DGLM_FORCE_INLINE)
 
 file(GLOB_RECURSE GL_PROJECT_SRC
      "apps/main.cpp"
@@ -22,7 +23,6 @@ file(GLOB_RECURSE GL_PROJECT_SRC
      "apps/Texture.cpp"
      "apps/Glyph.cpp"
      "src/*.cpp"
-     "lib/*.cpp"
      "lib/glad/*.c"
 )
 

@@ -3,6 +3,11 @@
 // Include glad and glfw for graphics and windowing
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <thread>
 #include <chrono>
 
@@ -151,6 +156,96 @@ class Tile {
     
 };
 
+
+std::vector<Glyph*> tiles;
+int res = 2;
+int zoom = 1;
+float xoff = 0;
+float yoff = 0;
+float xloc = 0;
+float yloc = 0;
+int width = 1;
+int height = 1;
+float dx = 0.0;
+float dy = 0.0;
+
+glm::mat4 zTransform = glm::mat4(1.0f);
+
+void resetTiles() {
+    for (int i = 0; i < tiles.size(); i++) {
+        delete tiles[i];
+    }
+
+    tiles.clear();
+
+
+    for (int x = 0; x < res; x++) {
+        for (int y = 0; y < res; y++) {
+            //Image* img = getTile(xoff + x, yoff+ y,zoom);
+            Image* img = getTile(x, y,1.0);
+            Glyph* tile = new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img, new ShaderProgram("apps/viewer/shaders/quad_mat.vsh", "apps/viewer/shaders/quad.fsh"));
+
+            glm::mat4 transform =  glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+            
+            transform = glm::translate(transform, glm::vec3(xoff, yoff, 0.0f));
+            transform = glm::scale(transform, glm::vec3(std::pow(2.0, zoom-1), std::pow(2.0, zoom-1), 0.0f));
+            transform = glm::translate(transform, glm::vec3(-xloc, -yloc, 0.0f));
+
+            //transform = glm::scale(transform, glm::vec3(1.0*height/width, 1.0f, 0.0f));
+            transform = glm::translate(transform, glm::vec3(2.0*x/res-1.0/res, 1.0/res-2.0*y/res, 0.0f));
+            transform = glm::scale(transform, glm::vec3(0.5f, 0.5f, 0.0f));
+            tile->setModelMatrix(transform);
+
+            tiles.push_back(tile);
+            std::cout << 2.0*x/res-1.0/res << " " << 1.0/res-2.0*y/res  << std::endl;
+            //tiles.push_back(new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img));
+            delete img;
+        }
+    }
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    float x = xpos/width;
+    float y = ypos/height;
+
+    float pxoff = xoff;
+    float pyoff = yoff;
+
+    xoff = x*2.0 - 1.0;
+    yoff = 1.0 - y*2.0;
+
+    xloc += (xoff - pxoff)/std::pow(2.0,zoom-1);
+    yloc += (yoff - pyoff)/std::pow(2.0,zoom-1);
+
+    // std::cout << xoffset << " " << yoffset << " " << x << " " << y << std::endl;
+    // if (yoffset > 0) {
+    //     xoff += x*res;
+    //     yoff += y*res;
+    //     xoff *= 2;
+    //     yoff *= 2;
+    //     /*xoff *= 2;
+    //     xoff += std::pow(res, zoom)*x;
+    //     yoff *= 2;
+    //     yoff += std::pow(res, zoom)*y;*/
+    // }
+    // else {
+    //     xoff /= 2;
+    //     yoff /= 2;
+    //     /*xoff -= std::pow(res, zoom-1)*x;
+    //     xoff /= 2;
+    //     yoff -= std::pow(res, zoom-1)*y;
+    //     yoff /= 2;*/
+    // }
+    // //yoff += std::pow(res, zoom);
+    zoom += yoffset;
+
+
+    resetTiles();
+}
+
 int main(int argc, char *argv[]) {
 
     /*if (argc < 6) {
@@ -190,13 +285,19 @@ int main(int argc, char *argv[]) {
     glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
     glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
     glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-    GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "Project", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1000, 800, "Project", NULL, NULL);
+    width = 1000;
+    height = 800;
+    //GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "Project", NULL, NULL);
+    //width = mode->width;
+    //height = mode->height;
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
     }
     glfwMakeContextCurrent(window);
+    glfwSetScrollCallback(window, scroll_callback);
     //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     //glfwSetCursorPosCallback(window, cursor_position_callback);
     //glfwSetMouseButtonCallback(window, mouse_button_callback);
@@ -208,7 +309,7 @@ int main(int argc, char *argv[]) {
 
     //Set up an alternate thread for event polling
     std::thread refresh_thread;
-    int refresh = 1000 * (1.0 / 60.0);
+    int refresh = 1000 * (1.0 / 30.0);
 
     refresh_thread = std::thread(
         [refresh, &mainloopActive]() {
@@ -224,15 +325,8 @@ int main(int argc, char *argv[]) {
     {
         int a = 0;
 
-        std::vector<Glyph*> tiles;
 
-        for (int x = 0; x < 4; x++) {
-            for (int y = 0; y < 4; y++) {
-                Image* img = getTile(2+x,2+y,3);
-                tiles.push_back(new Glyph(1.0*x/4.0 ,1.0*y/4.0, 1.0/4.0, 1.0/4.0, *img));
-                delete img;
-            }
-        }
+        resetTiles();
 
         
 
@@ -244,7 +338,7 @@ int main(int argc, char *argv[]) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
             a++;
-            std::cout << a << std::endl;
+            //std::cout << a << std::endl;
 
             if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
                 glfwSetWindowShouldClose(window, true);
@@ -252,6 +346,7 @@ int main(int argc, char *argv[]) {
 
 
             for (int i = 0; i < tiles.size(); i++) {
+                // get matrix's uniform location and set matrix
                 tiles[i]->draw();
             }
 

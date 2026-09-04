@@ -6,6 +6,10 @@
 #include "Texture.h"
 #include <vector>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 namespace csci3081 {
 
 class Glyph {
@@ -28,6 +32,9 @@ public:
 
   Glyph(const Glyph &glyph) = delete;
   Glyph &operator=(const Glyph &glyph) = delete;
+  void setModelMatrix(const glm::mat4& model) {
+    this->model = model;
+  }
 
 protected:
   const ShaderProgram &getShaderProgram() const { return *shaderProgram; }
@@ -44,6 +51,7 @@ private:
   std::vector<TexturePtr> textures;
   ShaderProgram *shaderProgram;
   Quad quad;
+  glm::mat4 model;
 };
 
 } // namespace csci3081

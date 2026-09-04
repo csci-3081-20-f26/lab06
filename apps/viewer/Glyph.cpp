@@ -90,8 +90,11 @@ void Glyph::draw() const {
         texArray.push_back(textures[i].texture);
     }
     program.setTextures("texArray", texArray);
-    program.setVec3("scale", w, h, 1.0f);
-    program.setVec3("offset", x*2.0-1.0 + w, 1.0 - h - y*2.0, 0.0f);
+    //program.setVec3("scale", w, h, 1.0f);
+    //program.setVec3("offset", x*2.0-1.0 + w, 1.0 - h - y*2.0, 0.0f);
+
+    unsigned int transformLoc = glGetUniformLocation(getShaderProgram().getId(), "model");
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(model));
 
     quad.draw();
 }
