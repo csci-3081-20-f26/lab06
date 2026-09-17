@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -14,18 +15,26 @@ class NodeObserver {
 public:
     virtual ~NodeObserver() {}
     virtual void onComponentAdded(Node& node, NodeComponent& component) {}
+    virtual void onComponentRemoved(Node& node, NodeComponent& component) {}
     virtual void onChildAdded(Node& node, Node& child) {}
+    virtual void onChildRemoved(Node& node, Node& child) {}
 };
 
 class NodeComponent : public NodeObserver {
 friend class Node;
 public:
+    NodeComponent() : node(nullptr) {}
     virtual ~NodeComponent() {}
     virtual void update() = 0;
     virtual void render() = 0;
+    virtual void remove();
 
 protected:
-    virtual void setNode(Node& node) {}
+    virtual void setNode(Node& node) { this->node = &node; }
+    virtual Node& getNode() { return *node; }
+
+private:
+    Node* node;
 };
 
 class Node {
@@ -83,6 +92,14 @@ public:
         observers.push_back(component);
     }
 
+    void removeComponent(const NodeComponent& component) {
+        std::vector<std::unique_ptr<NodeComponent> >::iterator it = std::remove_if(components.begin(), components.end(), 
+            [&component](std::unique_ptr<NodeComponent>& c) {
+      			return c.get() == &component;
+            });
+        components.erase(it, components.end());
+    }
+
     void add(Node* child) {
         child->parent = this;
         children.push_back(std::unique_ptr<Node>(child));
@@ -92,9 +109,29 @@ public:
         }
     }
 
+    void remove(Node& child) {
+        std::vector<std::unique_ptr<Node> >::iterator it = std::remove_if(children.begin(), children.end(), 
+            [&child](std::unique_ptr<Node>& node) {
+      			return node.get() == &child;
+            });
+        children.erase(it, children.end());
+        /*if (it != children.end()) {
+            children.erase(it);
+        }*/
+    }
+
     void addObserver(NodeObserver& observer) {
         observers.push_back(&observer);
     }
+
+    void removeObserver(NodeObserver& observer) {
+        std::vector<NodeObserver*>::iterator it = std::find(observers.begin(), observers.end(), &observer);
+        if (it != observers.end()) {
+            observers.erase(it);
+        }
+
+    }
+
 
     template <typename T>
     T* findComponent() {
@@ -117,5 +154,6 @@ private:
     Node* parent;
     std::vector<NodeObserver*> observers;
 };
+
 
 #endif
