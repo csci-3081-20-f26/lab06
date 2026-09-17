@@ -22,6 +22,7 @@ file(GLOB_RECURSE GL_PROJECT_SRC
      "apps/ShaderProgram.cpp"
      "apps/Texture.cpp"
      "apps/Glyph.cpp"
+     "apps/Node.cpp"
      "src/*.cpp"
      "lib/glad/*.c"
 )

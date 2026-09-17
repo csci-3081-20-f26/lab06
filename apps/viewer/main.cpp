@@ -22,6 +22,7 @@
 #include "Glyph.h"
 
 #include <cmath>
+#include "Node.h"
 
 using namespace gis;
 using namespace csci3081;
@@ -156,7 +157,7 @@ class Tile {
     
 };
 
-class Node {
+class GLNode {
 public:
     virtual void draw(const glm::mat4& currentTransform) {
         glm::mat4 t = currentTransform * transform;
@@ -166,10 +167,10 @@ public:
     }
 
     glm::mat4 transform;
-    std::vector<Node*> children;
+    std::vector<GLNode*> children;
 };
 
-class GlyphNode : public Node {
+class GlyphGLNode : public GLNode {
 public:
     void draw(const glm::mat4& currentTransform) {
         glm::mat4 t = currentTransform * transform;
@@ -180,7 +181,7 @@ public:
     Glyph* glyph;
 };
 
-Node mapNode;
+GLNode mapGLNode;
 int res = 2;
 int zoom = 1;
 float xoff = 0;
@@ -198,9 +199,9 @@ glm::mat4 zTransform = glm::mat4(1.0f);
 
 void resetTiles() {
 
-    mapNode.children.clear();
+    mapGLNode.children.clear();
 
-    /*Node* map = new Node();
+    /*GLNode* map = new GLNode();
     map->transform = glm::mat4(1.0f);*/
     //tiles.push_back(map);
 
@@ -210,7 +211,7 @@ void resetTiles() {
             Image* img = getTile(x, y,1.0);
             //Glyph* tile = new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img, new ShaderProgram("apps/viewer/shaders/quad_mat.vsh", "apps/viewer/shaders/quad.fsh"));
 
-            GlyphNode* tile = new GlyphNode();
+            GlyphGLNode* tile = new GlyphGLNode();
             tile->glyph = new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img, new ShaderProgram("apps/viewer/shaders/quad_mat.vsh", "apps/viewer/shaders/quad.fsh"));
 
             glm::mat4 transform =  glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
@@ -225,7 +226,7 @@ void resetTiles() {
             //tile->setModelMatrix(transform);
             tile->transform = transform;
 
-            mapNode.children.push_back(tile);
+            mapGLNode.children.push_back(tile);
 
             //tiles.push_back(tile);
             std::cout << 2.0*x/res-1.0/res << " " << 1.0/res-2.0*y/res  << std::endl;
@@ -257,7 +258,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     transform = glm::translate(transform, glm::vec3(xoff, yoff, 0.0f));
     transform = glm::scale(transform, glm::vec3(std::pow(2.0, zoom-1), std::pow(2.0, zoom-1), 0.0f));
     transform = glm::translate(transform, glm::vec3(-xloc, -yloc, 0.0f));
-    mapNode.transform = transform;
+    mapGLNode.transform = transform;
 
     // std::cout << xoffset << " " << yoffset << " " << x << " " << y << std::endl;
     // if (yoffset > 0) {
@@ -300,7 +301,7 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
         transform = glm::translate(transform, glm::vec3(xoff+(curx-startx), yoff+(cury-starty), 0.0f));
         transform = glm::scale(transform, glm::vec3(std::pow(2.0, zoom-1), std::pow(2.0, zoom-1), 0.0f));
         transform = glm::translate(transform, glm::vec3(-xloc, -yloc, 0.0f));
-        mapNode.transform = transform;
+        mapGLNode.transform = transform;
     }
 
 
@@ -320,7 +321,7 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
         transform = glm::translate(transform, glm::vec3(xoff, yoff, 0.0f));
         transform = glm::scale(transform, glm::vec3(std::pow(2.0, zoom-1), std::pow(2.0, zoom-1), 0.0f));
         transform = glm::translate(transform, glm::vec3(-xloc, -yloc, 0.0f));
-        mapNode.transform = transform;
+        mapGLNode.transform = transform;
     }*/
 }
 
@@ -352,7 +353,9 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 int main(int argc, char *argv[]) {
 
-    mapNode.transform = glm::mat4(1.0f);
+    Node scene;
+
+    mapGLNode.transform = glm::mat4(1.0f);
 
     /*if (argc < 6) {
         std::cout << "Usage: ./build/bin/terrain <output file prefix> <minLon> <minLat> <maxLon> <maxLat>" << std::endl;
@@ -451,7 +454,7 @@ int main(int argc, char *argv[]) {
                 glfwSetWindowShouldClose(window, true);
             }
 
-            mapNode.draw(glm::mat4(1.0f));
+            mapGLNode.draw(glm::mat4(1.0f));
 
             /*for (int i = 0; i < tiles.size(); i++) {
                 // get matrix's uniform location and set matrix
