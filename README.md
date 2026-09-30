@@ -37,3 +37,12 @@ cd build
 cmake ..
 make
 ```
+
+On some macs if you get a seg fault when you run the code there is one change you need to make. In main.cpp you will need to change the glfw minor version to 1, and it macs can work with `glfw` upto version 4.1. 
+```cpp
+.
+.
+.
+glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);   // was 3; macOS max is 4.1
+```
