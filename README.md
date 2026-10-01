@@ -57,3 +57,27 @@ make
 cd ..
 ./build/GLProject
 ```
+
+## Windows
+
+### Install dependencies
+Install Visual Studio with the "Desktop development with C++" workload, CMake and Git. Then install libcurl with [vcpkg](https://vcpkg.io):
+```powershell
+git clone https://github.com/microsoft/vcpkg C:\vcpkg
+C:\vcpkg\bootstrap-vcpkg.bat
+C:\vcpkg\vcpkg install curl:x64-windows
+```
+
+### Build
+```powershell
+mkdir build
+cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --build . --config Debug
+```
+
+### Run
+```powershell
+cd ..
+.\build\Debug\GLProject.exe
+```
