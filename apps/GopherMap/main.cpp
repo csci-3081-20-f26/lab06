@@ -212,7 +212,7 @@ void resetTiles() {
             //Glyph* tile = new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img, new ShaderProgram("apps/viewer/shaders/quad_mat.vsh", "apps/viewer/shaders/quad.fsh"));
 
             GlyphGLNode* tile = new GlyphGLNode();
-            tile->glyph = new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img, new ShaderProgram("apps/viewer/shaders/quad_mat.vsh", "apps/viewer/shaders/quad.fsh"));
+            tile->glyph = new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img, new ShaderProgram("apps/GopherMap/shaders/quad_mat.vsh", "apps/GopherMap/shaders/quad.fsh"));
 
             glm::mat4 transform =  glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
             
