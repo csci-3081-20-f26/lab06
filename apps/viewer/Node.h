@@ -20,13 +20,15 @@ public:
     virtual void onChildRemoved(Node& node, Node& child) {}
 };
 
-class NodeComponent : public NodeObserver {
+class NodeComponent {
 friend class Node;
 public:
     NodeComponent() : node(nullptr) {}
     virtual ~NodeComponent() {}
-    virtual void update() = 0;
-    virtual void render() = 0;
+    virtual void update() {}
+    virtual void preNodeRender() const {}
+    virtual void render() const {}
+    virtual void postNodeRender() const {}
     virtual void remove();
 
 protected:
@@ -62,13 +64,21 @@ public:
         }
     }
 
-    void render() {
+    void render() const {
+        for (int i = 0; i < components.size(); i++) {
+            components[i]->preNodeRender();
+        }
+
         for (int i = 0; i < components.size(); i++) {
             components[i]->render();
         }
 
         for (int i = 0; i < children.size(); i++) {
             children[i]->render();
+        }
+
+        for (int i = 0; i < components.size(); i++) {
+            components[i]->postNodeRender();
         }
     }
 
@@ -88,8 +98,6 @@ public:
         for (int i = 0; i < observers.size(); i++) {
             observers[i]->onComponentAdded(*this, *(components[components.size()-1]));
         }
-
-        observers.push_back(component);
     }
 
     void removeComponent(const NodeComponent& component) {
@@ -97,7 +105,14 @@ public:
             [&component](std::unique_ptr<NodeComponent>& c) {
       			return c.get() == &component;
             });
+
+
+        for (int i = 0; i < observers.size(); i++) {
+            observers[i]->onComponentRemoved(*this, *(it->get()));
+        }
+
         components.erase(it, components.end());
+
     }
 
     void add(Node* child) {
@@ -115,9 +130,10 @@ public:
       			return node.get() == &child;
             });
         children.erase(it, children.end());
-        /*if (it != children.end()) {
-            children.erase(it);
-        }*/
+
+        for (int i = 0; i < observers.size(); i++) {
+            observers[i]->onChildRemoved(*this, *(it->get()));
+        }
     }
 
     void addObserver(NodeObserver& observer) {
