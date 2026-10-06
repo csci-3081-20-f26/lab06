@@ -9,6 +9,17 @@ find_package(OpenGL REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLWF REQUIRED glfw3)
 
+include(ExternalProject)
+set(NanoGUIArgs -DNANOGUI_BUILD_SHARED=OFF -DNANOGUI_BUILD_PYTHON=OFF -DNANOGUI_BUILD_EXAMPLE=OFF -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/lib/NanoGUI/install -DCMAKE_C_FLAGS=-fPIC -DCMAKE_CXX_FLAGS=-fPIC  -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_CONFIGURATION_TYPES='Debug Release MinSizeRel RelWithDebInfo')
+ExternalProject_add(NanoGUI
+     GIT_REPOSITORY https://github.com/wjakob/nanogui.git
+     CMAKE_ARGS ${NanoGUIArgs}
+     SOURCE_DIR ${CMAKE_SOURCE_DIR}/lib/NanoGUI/src
+     BINARY_DIR ${CMAKE_SOURCE_DIR}/lib/NanoGUI/build
+     INSTALL_DIR ${CMAKE_SOURCE_DIR}/lib/NanoGUI/install
+     UPDATE_COMMAND ""
+)
+
 include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/lib ${CMAKE_SOURCE_DIR}/lib/glm ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/graphics)
 
