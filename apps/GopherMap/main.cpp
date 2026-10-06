@@ -212,7 +212,7 @@ void resetTiles() {
             //Glyph* tile = new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img, new ShaderProgram("apps/viewer/shaders/quad_mat.vsh", "apps/viewer/shaders/quad.fsh"));
 
             GlyphGLNode* tile = new GlyphGLNode();
-            tile->glyph = new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img, new ShaderProgram("apps/viewer/shaders/quad_mat.vsh", "apps/viewer/shaders/quad.fsh"));
+            tile->glyph = new Glyph(1.0*x/res ,1.0*y/res, 1.0/res, 1.0/res, *img, new ShaderProgram("apps/GopherMap/shaders/quad_mat.vsh", "apps/GopherMap/shaders/quad.fsh"));
 
             glm::mat4 transform =  glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
             
@@ -351,9 +351,79 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     }
 }
 
-int main(int argc, char *argv[]) {
+class QuadComponent : public NodeComponent {
+public:
+    QuadComponent() {
+        float vertices[] = {
+            1.0f,  1.0f, 0.0f,  // top right
+            1.0f, -1.0f, 0.0f,  // bottom right
+            -1.0f, -1.0f, 0.0f,  // bottom left
+            -1.0f,  1.0f, 0.0f   // top left 
+        };
+        float coords[] = {
+            1.0f,  0.0f,  // top right
+            1.0f, 1.0f,  // bottom right
+            0.0f, 1.0f,  // bottom left
+            0.0f,  0.0f   // top left 
+        };
+        unsigned int indices[] = {  // note that we start from 0!
+            0, 1, 3,  // first Triangle
+            1, 2, 3   // second Triangle
+        };
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &EBO);
+        // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+        glBindVertexArray(VAO);
+        // Add the data to the VBO
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) + sizeof(coords), (void*)0, GL_STATIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), &vertices);
+        glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices), sizeof(coords), &coords);
+        // Add the elements to the EBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        // Setup vertex attributes to be used in shader
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(sizeof(vertices)));
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, 0); 
+        glBindVertexArray(0); 
+    }
 
-    Node scene;
+    ~QuadComponent() {
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+        glDeleteBuffers(1, &EBO);
+    }
+ 
+    void render() const {
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    } 
+
+private:
+    unsigned int VAO, VBO, EBO;
+};
+
+class Material : public NodeComponent {
+public:
+    Material() {
+        
+    }
+
+    ~Material() {
+    }
+ 
+    void render() const {
+    } 
+
+private:
+    unsigned int VAO, VBO, EBO;
+};
+
+int main(int argc, char *argv[]) {
 
     mapGLNode.transform = glm::mat4(1.0f);
 
@@ -434,6 +504,8 @@ int main(int argc, char *argv[]) {
     // Application GL Context scope
     {
         int a = 0;
+        Node scene;
+        scene.addComponent(new QuadComponent());
 
 
         resetTiles();
@@ -455,6 +527,9 @@ int main(int argc, char *argv[]) {
             }
 
             mapGLNode.draw(glm::mat4(1.0f));
+            scene.updateWorldToLocal();
+            scene.update();
+            scene.render();
 
             /*for (int i = 0; i < tiles.size(); i++) {
                 // get matrix's uniform location and set matrix
