@@ -94,7 +94,7 @@ void appendNote(std::string& notes, const std::string& line) {
 }
 
 // Splits text into lines no wider than maxWidth with the current NanoVG
-// font. Explicit newlines start new lines.
+// font.
 std::vector<std::string> wrapText(NVGcontext* ctx, const std::string& text, float maxWidth) {
     std::vector<std::string> out;
     std::istringstream paragraphs(text);
@@ -129,8 +129,7 @@ public:
                           /*colorBits*/ 8, /*alphaBits*/ 8, /*depthBits*/ 24,
                           /*stencilBits*/ 8, /*nSamples*/ 0,
                           config::kGlMajor, config::kGlMinor) {
-        // NanoGUI calls GL directly on Linux; everything here goes through
-        // glad, so load it now that the context is current.
+        // NanoGUI calls GL directly on Linux, and everything here goes through glad.
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
             throw std::runtime_error("Failed to initialize GLAD");
         }
@@ -198,12 +197,12 @@ public:
         if (mPendingTask) mNoticeDrawn = true;
     }
 
-    // --- Input: the GUI gets first pick, the map/scene gets the rest ------
+    // --- Input ------
 
     bool keyboardEvent(int key, int scancode, int action, int modifiers) override {
         bool wasEditing = mCoordBox->focused();
         if (Screen::keyboardEvent(key, scancode, action, modifiers)) {
-            // Enter in the location box: the box has just committed its value.
+            // Enter in the location box.
             if (wasEditing && key == GLFW_KEY_ENTER && action == GLFW_PRESS)
                 goToPending();
             return true;
@@ -231,7 +230,7 @@ public:
             return true;
         }
 
-        // 2D: zoom around the cursor, keeping the map point under it fixed.
+        // 2D: zoom around the cursor keeping the map point under it fixed.
         glm::dvec2 anchor = screenToMerc(p);
         mZoom = clampZoom(mZoom + rel.y() * config::kScrollZoomStep);
         double wp = worldPx();
