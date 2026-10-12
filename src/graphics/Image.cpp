@@ -1,3 +1,4 @@
+#define STB_IMAGE_STATIC
 #include "Image.h"
 
 #include <algorithm>
