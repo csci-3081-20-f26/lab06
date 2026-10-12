@@ -93,7 +93,7 @@ inline int fetchAll(std::vector<Job>& jobs, const char* server) {
 }
 
 // ---------------------------------------------------------------------------
-// Data files named by the area they cover (see DATA_README.md, section 6):
+// Data files named by the area they cover (see README.md, 6.1):
 //   <prefix>_[<dataset>_]<S>_<W>_<N>_<E><ext>
 //   e.g. dem_USGS10m_44.939_-93.288_45.009_-93.168.asc
 //        buildings_44.939_-93.288_45.009_-93.168.json

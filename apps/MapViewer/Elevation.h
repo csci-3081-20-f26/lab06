@@ -2,7 +2,7 @@
 #define MAPVIEWER_ELEVATION_H_
 
 // Terrain heights from an OpenTopography Arc ASCII grid (AAIGrid), stored in
-// apps/MapViewer/data/terrain (see DATA_README.md, section 2). No GL here, so
+// apps/MapViewer/data/terrain (see README.md, 5.1 and 6.2). No GL here, so
 // this can be used on its own.
 
 #include <cstdint>

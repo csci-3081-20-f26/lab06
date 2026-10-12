@@ -3,7 +3,7 @@
 
 // Route graph built from OpenStreetMap roads: an Overpass API response
 // (`out geom` JSON) stored in apps/MapViewer/data/osm as
-// roads_<S>_<W>_<N>_<E>.json (see DATA_README.md, section 5).
+// roads_<S>_<W>_<N>_<E>.json (see README.md, 5.3 and 6.4).
 //
 // Nodes are OSM nodes (real OSM ids, lat/lon); edges join consecutive nodes
 // along each road, so curves keep their shape. RouteGraph has no GL, so

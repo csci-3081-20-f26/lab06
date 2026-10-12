@@ -195,7 +195,7 @@ bool RouteGraph::load(const geo::LatLonBox& scene, std::string& note) {
         const std::string body = fetchOsmRoads(request, fetchError);
         if (body.empty()) {
             note = "No roads for this scene (" + fetchError + "). Download " + request.describe() +
-                   " - see DATA_README.md.";
+                   " - see README.md.";
             return false;
         }
         if (!parse(body, error)) {

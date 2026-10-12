@@ -67,7 +67,7 @@ bool ElevationGrid::load(const geo::LatLonBox& scene, std::string& note) {
         const std::string body = fetchDem(request, fetchError);
         if (body.empty()) {
             note = "No terrain for this scene (" + fetchError + "). Download " + request.describe() +
-                   " - see DATA_README.md.";
+                   " - see README.md.";
             return false;
         }
         if (!parse(body, error)) {

@@ -1,5 +1,5 @@
-// PLACEHOLDER fetchers. See Fetchers.h for the contract and DATA_README.md
-// (sections 2, 3 and 7) for the exact requests these will make.
+// PLACEHOLDER fetchers. See Fetchers.h for the contract and README.md
+// (5.1 to 5.4 and 7) for the exact requests these will make.
 //
 // Until they're written, the viewer only uses files that are already in
 // apps/MapViewer/data, and the HUD shows which box to download by hand.
@@ -32,7 +32,7 @@ std::string fetchOsmBuildings(const geo::LatLonBox& box, std::string& error) {
 
 std::string fetchOsmRoads(const geo::LatLonBox& box, std::string& error) {
     // TODO(fetcher): same as fetchOsmBuildings, with the roads query from
-    //   DATA_README.md section 5:
+    //   README.md, 5.3:
     //   [out:json][timeout:120];
     //   (way["highway"~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|
     //        living_street|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link)$"]

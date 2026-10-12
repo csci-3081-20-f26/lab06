@@ -13,7 +13,7 @@
       changed) into a 3D scene in local meters. With Elevation on, each
       imagery tile becomes a grid mesh draped over terrain from an
       OpenTopography grid; buildings and the road graph come from
-      OpenStreetMap (see DATA_README.md). Orbit / pan / zoom like a CAD or
+      OpenStreetMap (see README.md). Orbit / pan / zoom like a CAD or
       Blender viewport; checkboxes show and hide object types.
       "Back to 2D map" eases back to top-down and returns to map mode.
 

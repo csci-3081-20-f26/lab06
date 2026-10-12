@@ -15,6 +15,14 @@ const std::string kImageryCacheDir = kCacheDir + "/imagery";
 const std::string kTerrainDir = kCacheDir + "/terrain";   // dem_<dataset>_<S>_<W>_<N>_<E>.asc
 const std::string kOsmDir = kCacheDir + "/osm";  // buildings_<S>_<W>_<N>_<E>.json, roads_<S>_<W>_<N>_<E>.json
 
+// OpenGL version of the window. macOS supports OpenGL up to 4.1 (core profile).
+const int kGlMajor = 4;
+#if defined(__APPLE__)
+const int kGlMinor = 1;
+#else
+const int kGlMinor = 3;
+#endif
+
 const double kStartLat = 44.974;     // UMN campus
 const double kStartLon = -93.228;
 const double kStartZoom = 15.0;
@@ -28,7 +36,7 @@ const int kTileSize = 256;
 const int kDownloadThreads = 8;
 const int kMaxTilesPerRender = 300;
 
-// Terrain (see DATA_README.md)
+// Terrain (see README.md)
 const char* const kDemDataset = "USGS10m";  // dataset the DEM fetcher asks for
 const char* const kOpenTopoApiKey = "";     // for the fetcher; don't commit a real key
 const int kTerrainGridPerTile = 32;         // mesh cells per imagery tile edge
@@ -38,7 +46,7 @@ const float kMaxExaggeration = 10.0f;
 // box grown by this fraction on each side and rounded outward to 0.001 deg.
 const double kFetchPadding = 0.1;
 
-// Buildings (see DATA_README.md, section 4)
+// Buildings (see README.md, 6.3)
 const float kMetersPerLevel = 3.0f;
 const float kDefaultBuildingHeight = 8.0f;
 

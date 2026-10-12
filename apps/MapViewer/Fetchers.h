@@ -2,10 +2,10 @@
 #define MAPVIEWER_FETCHERS_H_
 
 // Downloads for data that isn't on disk yet. The viewer calls these only
-// when no file in apps/MapViewer/data covers the scene (DATA_README.md,
-// section 6).
+// when no file in apps/MapViewer/data covers the scene (README.md,
+// 6.1).
 //
-// Contract (DATA_README.md, section 7):
+// Contract (README.md, 7):
 //   - Return the raw response body exactly as the server sent it, or "" and
 //     set `error` to a short message for the HUD.
 //   - Don't parse the body and don't write files. The viewer validates the

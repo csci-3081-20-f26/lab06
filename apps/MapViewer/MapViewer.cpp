@@ -128,7 +128,7 @@ public:
                           /*resizable*/ true, /*fullscreen*/ false,
                           /*colorBits*/ 8, /*alphaBits*/ 8, /*depthBits*/ 24,
                           /*stencilBits*/ 8, /*nSamples*/ 0,
-                          /*glMajor*/ 4, /*glMinor*/ 3) {
+                          config::kGlMajor, config::kGlMinor) {
         // NanoGUI calls GL directly on Linux; everything here goes through
         // glad, so load it now that the context is current.
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {

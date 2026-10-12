@@ -2,7 +2,7 @@
 #define MAPVIEWER_BUILDINGS_H_
 
 // OpenStreetMap buildings from an Overpass API response (`out geom` JSON),
-// stored in apps/MapViewer/data/osm (see DATA_README.md, section 3).
+// stored in apps/MapViewer/data/osm (see README.md, 5.2 and 6.3).
 //
 // BuildingData parses the file into footprints in lat/lon and has no GL, so
 // it can be used on its own. BuildingsLayer extrudes the footprints in the
@@ -50,7 +50,7 @@ private:
 
 // Building height in meters from the OSM `height` and `building:levels` tag
 // values (empty if absent): height, else levels x config::kMetersPerLevel,
-// else config::kDefaultBuildingHeight. See DATA_README.md, section 4.
+// else config::kDefaultBuildingHeight. See README.md, 6.3.
 float buildingHeight(const std::string& heightTag, const std::string& levelsTag);
 
 // "12", "12 m", "40'", "40 ft", "40'6\"", "12;15" -> meters. False if unreadable.
