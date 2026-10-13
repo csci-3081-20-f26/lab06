@@ -7,7 +7,6 @@ set(CMAKE_BUILD_TYPE Debug)
 
 find_package(OpenGL REQUIRED)
 find_package(PkgConfig REQUIRED)
-# pkg_search_module(GLWF REQUIRED glfw3)
 # find_package(glfw3 REQUIRED)
 
 include_directories(${OPENGL_INCLUDE_DIR})
@@ -22,21 +21,26 @@ file(GLOB_RECURSE MAP_PROJECT_SRC
 
 # Main executable
 add_executable(GopherMap ${MAP_PROJECT_SRC})
-#target_link_libraries(GopherMap ggis_graphics OpenGL::GL ${GLWF_LIBRARIES} curl)
 
-target_link_libraries(GopherMap
-    ggis_graphics
-    ${CMAKE_SOURCE_DIR}/lib/NanoGUI/install/lib/libnanogui.a
-    OpenGL::GL
-    curl
-    "-framework Cocoa"
-    "-framework IOKit"
-    "-framework CoreFoundation"
-    "-framework CoreVideo"
-)
+if (APPLE)
+    # macOS: use the GLFW that NanoGUI builds into libnanogui.a
+    target_include_directories(GopherMap PRIVATE
+        ${CMAKE_SOURCE_DIR}/lib/NanoGUI/src/ext/glfw/include
+    )
+    target_link_libraries(GopherMap
+        ggis_graphics
+        ${CMAKE_SOURCE_DIR}/lib/NanoGUI/install/lib/libnanogui.a
+        OpenGL::GL
+        curl
+        "-framework Cocoa"
+        "-framework IOKit"
+        "-framework CoreFoundation"
+        "-framework CoreVideo"
+    )
+else()
+    # Linux: system GLFW from pkg-config (original setup)
+    pkg_search_module(GLWF REQUIRED glfw3)
+    target_link_libraries(GopherMap ggis_graphics OpenGL::GL ${GLWF_LIBRARIES} curl)
+endif()
 
-# MacOS compatability
-target_include_directories(GopherMap PRIVATE
-    ${CMAKE_SOURCE_DIR}/lib/NanoGUI/src/ext/glfw/include
-)
 add_dependencies(GopherMap NanoGUI)
