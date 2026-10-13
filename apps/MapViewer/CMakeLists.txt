@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.5)
 project(MapViewer)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -47,4 +47,16 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
      set(DEP_LIBS ${CMAKE_THREAD_LIBS_INIT} rt Xrandr Xxf86vm Xinerama Xcursor Xi m dl ${X11_LIBRARIES})
 endif()
 
-target_link_libraries(MapViewer ggis_graphics nanogui.a OpenGL::GL curl ${DEP_LIBS})
+if (APPLE)
+     set(DEP_LIBS
+          "-framework Cocoa"
+          "-framework IOKit"
+          "-framework CoreFoundation"
+          "-framework CoreVideo")
+endif()
+
+# target_link_libraries(MapViewer ggis_graphics nanogui.a OpenGL::GL curl ${DEP_LIBS})
+target_link_libraries(MapViewer ggis_graphics
+     ${NANOGUI_DIR}/install/lib/libnanogui.a
+     OpenGL::GL curl ${DEP_LIBS})
+add_dependencies(MapViewer NanoGUI)

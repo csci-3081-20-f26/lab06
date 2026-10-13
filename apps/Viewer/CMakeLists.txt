@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.5)
 project(Viewer)
 
 set(CMAKE_CXX_STANDARD 11) # no explicit compiler flags if possible
@@ -7,7 +7,7 @@ set(CMAKE_BUILD_TYPE Debug)
 
 find_package(OpenGL REQUIRED)
 find_package(PkgConfig REQUIRED)
-pkg_search_module(GLWF REQUIRED glfw3)
+# pkg_search_module(GLWF REQUIRED glfw3)
 # find_package(glfw3 REQUIRED)
 
 include_directories(
@@ -19,6 +19,7 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/lib/NanoGUI/install/include
      ${CMAKE_SOURCE_DIR}/lib/NanoGUI/src/ext/eigen
      ${CMAKE_SOURCE_DIR}/lib/NanoGUI/src/ext/nanovg/src
+     ${CMAKE_SOURCE_DIR}/lib/NanoGUI/src/ext/glfw/include
 )
 
 link_directories(${CMAKE_SOURCE_DIR}/lib/NanoGUI/install/lib)
@@ -57,5 +58,8 @@ endif()
 
 # Main executable
 add_executable(Viewer ${MAP_PROJECT_SRC})
-target_link_libraries(Viewer ggis_graphics ${GLWF_LIBRARIES} nanogui.a OpenGL::GL ${DEP_LIBS})
-
+# target_link_libraries(Viewer ggis_graphics ${GLWF_LIBRARIES} nanogui.a OpenGL::GL ${DEP_LIBS})
+target_link_libraries(Viewer ggis_graphics
+    ${CMAKE_SOURCE_DIR}/lib/NanoGUI/install/lib/libnanogui.a
+    OpenGL::GL ${DEP_LIBS})
+add_dependencies(Viewer NanoGUI)
