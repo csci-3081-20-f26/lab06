@@ -1,14 +1,9 @@
-cmake_minimum_required(VERSION 3.5)
-project(GopherGIS)
+cmake_minimum_required(VERSION 3.10)
+project(MapViewer)
 
 set(CMAKE_CXX_STANDARD 11) # no explicit compiler flags if possible
 set(CMAKE_BUILD_TYPE Debug)
-
-project(MapViewer)
-
-set(CMAKE_CXX_STANDARD 11)
 set(OpenGL_GL_PREFERENCE GLVND)
-set(CMAKE_BUILD_TYPE Debug)
 
 find_package(OpenGL REQUIRED)
 
@@ -23,7 +18,16 @@ ExternalProject_add(glm
      INSTALL_COMMAND ""
 )
 
-set(NanoGUIArgs -DNANOGUI_BUILD_SHARED=OFF -DNANOGUI_BUILD_PYTHON=OFF -DNANOGUI_BUILD_EXAMPLE=OFF -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/lib/NanoGUI/install -DCMAKE_C_FLAGS=-fPIC -DCMAKE_CXX_FLAGS=-fPIC  -DCMAKE_DEBUG_POSTFIX=d -DCMAKE_CONFIGURATION_TYPES='Debug Release MinSizeRel RelWithDebInfo')
+set(NanoGUIArgs
+     -DCMAKE_POLICY_VERSION_MINIMUM=3.5      
+     -DNANOGUI_BUILD_SHARED=OFF
+     -DNANOGUI_BUILD_PYTHON=OFF
+     -DNANOGUI_BUILD_EXAMPLE=OFF
+     -DCMAKE_INSTALL_PREFIX=${CMAKE_SOURCE_DIR}/lib/NanoGUI/install
+     -DCMAKE_C_FLAGS=-fPIC
+     -DCMAKE_CXX_FLAGS=-fPIC
+     -DCMAKE_DEBUG_POSTFIX=d
+)
 ExternalProject_add(NanoGUI
      GIT_REPOSITORY https://github.com/wjakob/nanogui.git
      CMAKE_ARGS ${NanoGUIArgs}
@@ -31,10 +35,11 @@ ExternalProject_add(NanoGUI
      BINARY_DIR ${CMAKE_SOURCE_DIR}/lib/NanoGUI/build
      INSTALL_DIR ${CMAKE_SOURCE_DIR}/lib/NanoGUI/install
      UPDATE_COMMAND ""
+     PATCH_COMMAND sed -i.bak "1s/.*/cmake_minimum_required(VERSION 3.5)/" resources/bin2c.cmake
+     BUILD_BYPRODUCTS ${CMAKE_SOURCE_DIR}/lib/NanoGUI/install/lib/libnanogui.a
 )
 
-set(NANOGUI_DIR   ${CMAKE_SOURCE_DIR}/lib/NanoGUI)
-
+set(NANOGUI_DIR ${CMAKE_SOURCE_DIR}/lib/NanoGUI)
 
 add_definitions(-DGLM_FORCE_INLINE)
 
@@ -55,7 +60,9 @@ include_directories(
 
 link_directories(${NANOGUI_DIR}/install/lib)
 
-add_definitions(-DGLM_FORCE_INLINE)
+# glad.c comes from the NanoGUI clone, which only appears at build time, so this tell CMake not to look for it during configure. (Without this it fails on MacOS)
+set(NANOGUI_GLAD_C ${NANOGUI_DIR}/src/ext/glad/src/glad.c)
+set_source_files_properties(${NANOGUI_GLAD_C} PROPERTIES GENERATED TRUE)
 
 add_executable(MapViewer
      src/main.cpp          # creates and runs a MapViewer
@@ -66,7 +73,7 @@ add_executable(MapViewer
      src/Routes.cpp        # route graph from OSM roads in data/osm
      src/Fetchers.cpp      # PLACEHOLDER downloads for terrain and buildings
      src/WebService.cpp
-     ${NANOGUI_DIR}/src/ext/glad/src/glad.c
+     ${NANOGUI_GLAD_C}
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -76,6 +83,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif()
 
 if (APPLE)
+     add_definitions(-DGL_SILENCE_DEPRECATION)   # Apple marks all OpenGL calls deprecated
      set(DEP_LIBS
           "-framework Cocoa"
           "-framework IOKit"
@@ -86,4 +94,4 @@ endif()
 target_link_libraries(MapViewer
      ${NANOGUI_DIR}/install/lib/libnanogui.a
      OpenGL::GL curl ${DEP_LIBS})
-add_dependencies(MapViewer NanoGUI)
+add_dependencies(MapViewer NanoGUI glm)
