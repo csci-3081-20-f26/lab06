@@ -6,42 +6,31 @@ In this lab you will build, install, and run a front end prototype of a GIS syst
 
 ## What You Will Learn
 
-1. How to run PostgreSQL and FastAPI with Docker Compose.
-2. How to inject database configuration with environment variables.
-3. How to initialize tables and seed data from SQL.
-4. How to organize a simple data layer with DTOs, repositories, services, and routes.
-5. How to call an API from a custom Python `httpx` client.
-6. How to verify CRUD behavior with read-after-write checks.
+1. How to build and run a computer graphics program.
+2. How to use CMake to compile C/C++ code across different platforms.
+3. How to obtain API keys and download test data for a GIS application.
+4. The skills needed to work on the C++ project.
 
 ## What's in lab05
 
-- `app/main.py`: FastAPI application factory and startup database pool wiring.
-- `app/routes/db.py`: API routes for database-backed resources.
-- `app/db/dtos.py`: Pydantic request and response data models.
-- `app/db/repos/`: Repository classes that run SQL queries.
-- `app/db/service/db_table_service.py`: Service layer that combines repository results into API responses.
-- `app/deps/db_pool.py`: Async PostgreSQL connection pool dependency.
-- `sql/v1.sql`: Schema and seed data for students, courses, and enrollments.
-- `docker-compose.yml`: Local PostgreSQL and API runtime.
-- `Dockerfile.db` and `Dockerfile.server`: Container build files.
-- `requirements.txt`: Python dependencies.
+- `lib`: Several dependencies needed for the computer graphics code.
 
-# MapViewer
+# Overview
 
 ## 1. General
 
-MapViewer shows satellite imagery as a 2D map and as a 3D view. The 3D view
+The MapViewer application, a prototype for the GopherGIS framework, shows satellite imagery as a 2D map and as a 3D view. The 3D view
 uses three data files:
 
 - The terrain file gives the height of the ground.
 - The buildings file gives the shape and the height of each building.
 - The roads file gives the roads. The route graph comes from this file.
 
-The files are in the `apps/MapViewer/data` folder. Each file is the response
+The files are in the `data` folder. Each file is the response
 of a web service. The viewer does not change the files. The name of each file
 shows the area that the file covers.
 
-TODO: The functions in `Fetchers.cpp` will download these files. For tests,
+The functions in `Fetchers.cpp` will download these files. For tests,
 use the script `fetch_prototype_data.sh` to download the files.
 
 ## 2. Build and run
