@@ -355,8 +355,6 @@ Obey these rules when you write the functions:
 4. Do not write files. The viewer saves the response.
 5. Do not call OpenGL functions.
 
-Put the OpenTopography API key in `config::kOpenTopoApiKey` in `Config.h`.
-
 CAUTION: Do not commit the real API key to git.
 
 The viewer calls the fetchers in the main thread. The window shows a message
