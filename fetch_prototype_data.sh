@@ -14,7 +14,7 @@ set -euo pipefail
 # The area: south, west, north, east (degrees).
 S=44.939; W=-93.288; N=45.009; E=-93.168
 
-DATA=apps/MapViewer/data
+DATA=data
 TERRAIN=$DATA/terrain/dem_USGS10m_${S}_${W}_${N}_${E}.asc
 BUILDINGS=$DATA/osm/buildings_${S}_${W}_${N}_${E}.json
 ROADS=$DATA/osm/roads_${S}_${W}_${N}_${E}.json

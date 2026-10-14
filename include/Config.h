@@ -10,7 +10,7 @@ namespace config {
 const char* const kImageryServer =
     "https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/";
 
-const std::string kCacheDir = "apps/MapViewer/data";
+const std::string kCacheDir = "data";
 const std::string kImageryCacheDir = kCacheDir + "/imagery";
 const std::string kTerrainDir = kCacheDir + "/terrain";   // dem_<dataset>_<S>_<W>_<N>_<E>.asc
 const std::string kOsmDir = kCacheDir + "/osm";  // buildings_<S>_<W>_<N>_<E>.json, roads_<S>_<W>_<N>_<E>.json
