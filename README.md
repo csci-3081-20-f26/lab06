@@ -1,3 +1,31 @@
+# Lab 06: Front End Prototype
+
+## Goal
+
+In this lab you will build, install, and run a front end prototype of a GIS system (GopherGIS).  The Goal is to learn how to use `CMake`, a cross platform compilation tool, to build the application on your environment and operating system.
+
+## What You Will Learn
+
+1. How to run PostgreSQL and FastAPI with Docker Compose.
+2. How to inject database configuration with environment variables.
+3. How to initialize tables and seed data from SQL.
+4. How to organize a simple data layer with DTOs, repositories, services, and routes.
+5. How to call an API from a custom Python `httpx` client.
+6. How to verify CRUD behavior with read-after-write checks.
+
+## What's in lab05
+
+- `app/main.py`: FastAPI application factory and startup database pool wiring.
+- `app/routes/db.py`: API routes for database-backed resources.
+- `app/db/dtos.py`: Pydantic request and response data models.
+- `app/db/repos/`: Repository classes that run SQL queries.
+- `app/db/service/db_table_service.py`: Service layer that combines repository results into API responses.
+- `app/deps/db_pool.py`: Async PostgreSQL connection pool dependency.
+- `sql/v1.sql`: Schema and seed data for students, courses, and enrollments.
+- `docker-compose.yml`: Local PostgreSQL and API runtime.
+- `Dockerfile.db` and `Dockerfile.server`: Container build files.
+- `requirements.txt`: Python dependencies.
+
 # MapViewer
 
 ## 1. General
