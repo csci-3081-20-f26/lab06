@@ -77,7 +77,7 @@ NOTE: Apple supports OpenGL up to version 4.1 (core profile). On macOS, the
 app asks for OpenGL 4.1. On Linux and Windows, it asks for OpenGL 4.3. You do
 not have to change the code.
 
-### 2.3 Windows
+### 2.3 Windows (MSVC)
 
 1. Install Visual Studio with the **Desktop development with C++** workload.
 2. Install CMake and Git.
