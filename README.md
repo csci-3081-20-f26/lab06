@@ -58,6 +58,8 @@ cd ..
 
 ### 2.2 macOS (Apple Silicon)
 
+If you don't have [Homebrew](https://brew.sh/) (`brew`) installed already, you will need to install it in order to install all of the libraries needed for the project.
+
 1. Install the command line tools and CMake:
    ```bash
    xcode-select --install
