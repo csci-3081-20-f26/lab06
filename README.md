@@ -44,7 +44,7 @@ You will need to have the following packages installed:
 - `cmake`
 - `build-essential` (for Ubuntu/Debian-like distros) / `c-development` (for Fedora-like distros. Must be installed via `dnf group install`)
 - `libglu1-mesa-dev` (for Ubuntu/Debian-like distros) / `mesa-libGLU-devel` (for Fedora-like distros)
-- `xorg-dev` (for Ubuntu/Debian-like distros) / `libXi-devel libXcursor-devel libXinerama-devel libXrandr-devel xorg-x11-server-devel` (for Fedora-like distros)
+- `xorg-dev` (for Ubuntu/Debian-like distros) / `libXi-devel libXcursor-devel libXinerama-devel libXrandr-devel libXxf86vm-devel xorg-x11-server-devel` (for Fedora-like distros)
 - `libcurl4-openssl-dev` (for Ubuntu/Debian-like distros) / `libcurl-devel` (for Fedora-like distros)
 
 Build:
