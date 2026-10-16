@@ -53,7 +53,7 @@ Run:
 
 ```bash
 cd ..
-./build/apps/MapViewer/MapViewer
+./build/MapViewer
 ```
 
 ### 2.2 macOS (Apple Silicon)
