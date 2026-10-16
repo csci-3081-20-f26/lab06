@@ -194,6 +194,7 @@ the next server. To use only one server, set `OVERPASS_URL`:
 ```bash
 OVERPASS_URL=https://maps.mail.ru/osm/tools/overpass/api/interpreter ./fetch_prototype_data.sh
 ```
+**Steps 5-7 details how the script works under the hood, you do not need to do the following steps.**
 
 ## 5. Web service requests
 
