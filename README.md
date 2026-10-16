@@ -84,32 +84,11 @@ NOTE: Apple supports OpenGL up to version 4.1 (core profile). On macOS, the
 app asks for OpenGL 4.1. On Linux and Windows, it asks for OpenGL 4.3. You do
 not have to change the code.
 
-### 2.3 Windows (MSVC)
+### 2.3 Windows
 
-1. Install Visual Studio with the **Desktop development with C++** workload.
-2. Install CMake and Git.
-3. Install libcurl with [vcpkg](https://vcpkg.io):
-   ```powershell
-   git clone https://github.com/microsoft/vcpkg C:\vcpkg
-   C:\vcpkg\bootstrap-vcpkg.bat
-   C:\vcpkg\vcpkg install curl:x64-windows
-   ```
+Use WSL or a virtual machine. Here is a link to instructions detailing how to install Ubutnu on WSL: [https://canvas.umn.edu/courses/579297/discussion_topics/3657981](https://canvas.umn.edu/courses/579297/discussion_topics/3657981).
 
-Build:
-
-```powershell
-mkdir build
-cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
-cmake --build . --config Debug
-```
-
-Run:
-
-```powershell
-cd ..
-.\build\Debug\MapViewer.exe
-```
+Follow the instructions for Linux (2.1) following installation.
 
 ## 3. Data files and area
 
