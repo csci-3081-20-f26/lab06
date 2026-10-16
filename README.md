@@ -157,7 +157,7 @@ it.
 
 1. Open a terminal. Go to the root folder of the repository:
    ```bash
-   cd ~/project-dev
+   cd lab06
    ```
 2. Set the API key:
    ```bash
