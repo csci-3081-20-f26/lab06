@@ -40,12 +40,11 @@ start from this folder, because it finds the `data` folder from there.
 
 ### 2.1 Linux
 
-#### TODO: Add the rest of the Ubuntu packages, no additional Fedora packages are needed
 You will need to have the following packages installed:
 - `cmake`
 - `build-essential` (for Ubuntu/Debian-like distros) / `c-development` (for Fedora-like distros. Must be installed via `dnf group install`)
-- `libgl1-mesa-dev` (for Ubuntu/Debian-like distros) / `mesa-libGL-devel` (for Fedora-like distros)
-- `xorg-dev` (for Ubuntu/Debian-like distros) / `libXrandr-devel libXinerama-devel libXcursor-devel libXxf86vm-devel libXi-devel` (for Fedora-like distros)
+- `libglu1-mesa-dev` (for Ubuntu/Debian-like distros) / `mesa-libGLU-devel` (for Fedora-like distros)
+- `xorg-dev` (for Ubuntu/Debian-like distros) / `libXi-devel libXcursor-devel libXinerama-devel libXrandr-devel xorg-x11-server-devel` (for Fedora-like distros)
 - `libcurl4-openssl-dev` (for Ubuntu/Debian-like distros) / `libcurl-devel` (for Fedora-like distros)
 
 Build:
