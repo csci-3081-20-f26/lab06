@@ -8,6 +8,8 @@
 #   ./fetch_prototype_data.sh --check     # only examine the files
 #
 # The script keeps the files that exist. Delete a file to download it again.
+# The script uses https://wiki.openstreetmap.org/wiki/Overpass_API to get the buildings and roads. 
+# It uses https://opentopography.org/ to get the terrain.
 
 set -euo pipefail
 
@@ -19,7 +21,7 @@ TERRAIN=$DATA/terrain/dem_USGS10m_${S}_${W}_${N}_${E}.asc
 BUILDINGS=$DATA/osm/buildings_${S}_${W}_${N}_${E}.json
 ROADS=$DATA/osm/roads_${S}_${W}_${N}_${E}.json
 
-# Overpass queries (README.md, 5.2 and 5.3). The script puts the area in place of BBOX.
+# Overpass queries. The script puts the area in place of BBOX.
 BUILDINGS_QUERY='[out:json][timeout:120];(way["building"]["building"!="no"](BBOX);relation["building"]["type"="multipolygon"](BBOX););out geom;'
 ROADS_QUERY='[out:json][timeout:120];(way["highway"~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link)$"]["area"!="yes"](BBOX);way["highway"="service"]["service"!~"^(parking_aisle|driveway|drive-through)$"]["area"!="yes"](BBOX););out geom;'
 
@@ -28,12 +30,16 @@ OVERPASS_SERVERS=${OVERPASS_URL:-"https://overpass-api.de/api/interpreter
 https://overpass.private.coffee/api/interpreter
 https://maps.mail.ru/osm/tools/overpass/api/interpreter"}
 
-USER_AGENT="GopherMapViewer/0.1 (CSCI 3081 class project)"
+# The Overpass servers reject a request (HTTP 406) if it does not identify the app.
+CONTACT_URL="https://github.com/csci-3081-20-f26/project-dev"
+USER_AGENT="GopherMapViewer/0.1 (CSCI 3081 Gopher GIS; +$CONTACT_URL)"
+
+# If a server was busy (HTTP 429 or 504, or an answer that is not complete), wait this many seconds and try all the servers one more time.
+RETRY_WAIT=60
 
 fail() { echo "ERROR: $*" >&2; exit 1; }
 
-# Prints the number of elements in an Overpass response. Fails if the file
-# is not complete Overpass JSON.
+# Prints the number of elements in an Overpass response. Fails if the file is not complete Overpass JSON.
 check_json() {
     python3 -I -c '
 import json, sys
@@ -51,7 +57,7 @@ download_terrain() {
     echo "terrain: downloading..."
     local url="https://portal.opentopography.org/API/usgsdem?datasetName=USGS10m&south=$S&north=$N&west=$W&east=$E&outputFormat=AAIGrid&API_Key=$OPENTOPO_API_KEY"
     local code
-    code=$(curl -sS --compressed -m 300 -o "$TERRAIN" -w '%{http_code}' "$url") || code="no connection"
+    code=$(curl -sS --compressed --connect-timeout 30 -m 300 -o "$TERRAIN" -w '%{http_code}' "$url") || code="no connection"
     if [ "$code" != 200 ]; then
         echo "  $(head -c 200 "$TERRAIN" 2>/dev/null)"
         rm -f "$TERRAIN"
@@ -59,27 +65,47 @@ download_terrain() {
     fi
 }
 
-# download_overpass <name> <query> <file>
+# download_overpass format: <name> <query> <file>
+# sends the query to each server until one gives the data.
 download_overpass() {
-    local name=$1 query=${2//BBOX/$S,$W,$N,$E} file=$3 server reason
-    for server in $OVERPASS_SERVERS; do
-        echo "$name: asking $server ..."
-        reason="no connection"
-        if curl -sS --compressed -m 300 -A "$USER_AGENT" -o "$file" --data-urlencode "data=$query" "$server"; then
-            reason=$(check_json "$file" 2>&1) && return
-        fi
-        echo "  $reason"
-        rm -f "$file"
+    local name=$1 query=${2//BBOX/$S,$W,$N,$E} file=$3
+    local round server code reason busy=0 refused=0
+    for round in 1 2; do
+        for server in $OVERPASS_SERVERS; do
+            echo "$name: asking $server ..."
+            code=$(curl -sS --compressed --connect-timeout 30 -m 300 \
+                -A "$USER_AGENT" -H "Referer: $CONTACT_URL" \
+                -o "$file" -w '%{http_code}' \
+                --data-urlencode "data=$query" "$server") || code=000
+            case "$code" in
+                200) reason=$(check_json "$file" 2>&1) && return
+                     reason="the answer is $reason"; busy=1 ;;
+                406) reason="HTTP 406: the server refused the request headers"; refused=1 ;;
+                429) reason="HTTP 429: too many requests from your connection"; busy=1 ;;
+                504) reason="HTTP 504: the server is busy"; busy=1 ;;
+                000) reason="no connection to the server (see the curl message above)" ;;
+                *)   reason="HTTP $code: $(head -c 120 "$file" 2>/dev/null | tr '\n' ' ')" ;;
+            esac
+            echo "  $reason"
+            rm -f "$file"
+        done
+        # Try one more time only if a server was busy (504).
+        [ "$round" = 1 ] && [ "$busy" = 1 ] || break
+        echo "$name: the servers are busy. Waiting $RETRY_WAIT seconds..."
+        sleep "$RETRY_WAIT"
     done
-    fail "$name: no Overpass server answered. Wait 10 minutes and run the script again."
+    [ "$refused" = 0 ] || echo "For HTTP 406, set CONTACT_URL in this script to a real web address." >&2
+    [ "$busy" = 0 ] || echo "The servers are busy. Wait a few minutes and run the script again." >&2
+    fail "$name: no Overpass server gave a complete answer."
 }
 
+# Using the tiles that are compatible with the 3D data from OSM.
 download_imagery() {
     local x y file
     for y in 11789 11790 11791 11792; do
         for x in 7896 7897 7898 7899 7900; do
             file=$DATA/imagery/15-$y-$x.jpg
-            [ -s "$file" ] || curl -fsS -m 60 -A "$USER_AGENT" -o "$file" \
+            [ -s "$file" ] || curl -fsS --connect-timeout 30 -m 60 -A "$USER_AGENT" -H "Referer: $CONTACT_URL" -o "$file" \
                 "https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/15/$y/$x" \
                 || fail "imagery tile 15/$y/$x"
         done
@@ -110,7 +136,7 @@ check_files() {
 
 # --- Start -------------------------------------------------------------------
 case "${1:-}" in ""|--imagery|--check) ;; *) fail "Unknown option $1. Use --imagery or --check." ;; esac
-[ -d apps/MapViewer ] || fail "Run the script from the root folder of the repository."
+[ -d src ] || fail "Run the script from the root folder of the repository."
 mkdir -p "$DATA/terrain" "$DATA/osm" "$DATA/imagery"
 
 if [ "${1:-}" != "--check" ]; then
