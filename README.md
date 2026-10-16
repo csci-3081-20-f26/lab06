@@ -108,7 +108,7 @@ Run:
 
 ```powershell
 cd ..
-.\build\apps\MapViewer\Debug\MapViewer.exe
+.\build\Debug\MapViewer.exe
 ```
 
 ## 3. Data files and area
